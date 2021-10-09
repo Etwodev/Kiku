@@ -1,9 +1,9 @@
 <div id="top"></div>
 
 [![Contributors][contributors-shield]][contributors-url]
-[![Forks][forks-shield]][forks-url]
 [![Stargazers][stars-shield]][stars-url]
 [![Issues][issues-shield]][issues-url]
+[![GNU GPLv3 License][license-shield]][license-url]
 
 
 <!-- PROJECT LOGO -->
@@ -29,8 +29,6 @@
 
 [contributors-shield]: https://img.shields.io/github/contributors/etwodev/Kiku.svg?style=for-the-badge
 [contributors-url]: https://github.com/etwodev/Kiku/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/etwodev/Kiku.svg?style=for-the-badge
-[forks-url]: https://github.com/etwodev/Kiku/network/members
 [stars-shield]: https://img.shields.io/github/stars/etwodev/Kiku.svg?style=for-the-badge
 [stars-url]: https://github.com/etwodev/Kiku/stargazers
 [issues-shield]: https://img.shields.io/github/issues/etwodev/Kiku.svg?style=for-the-badge
