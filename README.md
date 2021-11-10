@@ -1,5 +1,4 @@
-<div id="top"></div>
-<br />
+<!-- PROJECT FRONT -->
 <div align="center">
   <a href="https://github.com/etwodev/Kiku">
     <img src="images/logo.png" alt="Logo" width="200" height="200">
@@ -13,18 +12,25 @@
     <br />
     <a href="https://github.com/etwodev/Kiku/issues">Report Bug</a>
     ·
-    <a href="https://github.com/etwodev/Kiku/issues">Request Feature</a>
+    <a href="https://github.com/etwodev/Kiku/issues">Suggest Feature</a>
     <br />
     <sub>Distributed under the GNU GPLv3 License. See `LICENSE.txt` for more information.</sub>
   </p>
 </div>
 
-[contributors-shield]: https://img.shields.io/github/contributors/etwodev/Kiku.svg?style=for-the-badge
-[contributors-url]: https://github.com/etwodev/Kiku/graphs/contributors
-[stars-shield]: https://img.shields.io/github/stars/etwodev/Kiku.svg?style=for-the-badge
-[stars-url]: https://github.com/etwodev/Kiku/stargazers
-[issues-shield]: https://img.shields.io/github/issues/etwodev/Kiku.svg?style=for-the-badge
-[issues-url]: https://github.com/etwodev/Kiku/issues
-[license-shield]: https://img.shields.io/github/license/etwodev/Kiku.svg?style=for-the-badge
-[license-url]: https://github.com/etwodev/Kiku/blob/master/LICENSE.txt
-[product-screenshot]: display/screenshot.png
+## Documentation
+
+### Modules
+
+Kiku runs primarily off pycord, but also uses multiple different frameworks and modules. Listed below is the documentation for notable modules.
+
+* [pycord](https://docs.pycord.dev/en/master/index.html)
+* [pillows](https://pillow.readthedocs.io/en/stable/)
+* [matplotlib](https://matplotlib.org/)
+* [mysql-connector](https://dev.mysql.com/doc/connector-python/en/)
+* [asyncio](https://docs.python.org/3/library/asyncio.html)
+
+Installations should generally be done through pip in a **Python 3.8.4** environment. See below for downloading requirements.
+  ```
+  $ pip3 install -U -r /path/to/requirements.txt
+  ```
