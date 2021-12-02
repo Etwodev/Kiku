@@ -12,7 +12,7 @@ class listeners(commands.Cog):
 
     @tasks.loop(minutes=10)
     async def status_task(self):
-        await self.client.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=f"the Info in {len(self.client.guilds)} servers!"))
+        return await self.client.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=f"the Info in {len(self.client.guilds)} servers!"))
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx, err):
@@ -45,13 +45,19 @@ class listeners(commands.Cog):
 
         elif isinstance(err, commands.NoPrivateMessage):
             await ctx.reply(embed=self.embeds.NoPrivateMessage())
+        
+        elif isinstance(err, commands.errors.BadArgument):
+            await ctx.reply(embed=self.embeds.BadArgument())
+
+        elif isinstance(err, commands.UserInputError):
+            await ctx.reply(embed=self.embeds.UserInputError(err))
 
         elif isinstance(err, commands.CommandNotFound):
             pass
 
         elif isinstance(err, commands.PartialEmojiConversionFailure):
             pass
-
+        
         else:
             raise err
 
@@ -67,14 +73,14 @@ class listeners(commands.Cog):
     
     @commands.Cog.listener()
     async def on_ready(self):
-        self.status_task.start() # This is not a bug. vscode just is stupid.
+        self.status_task.restart() # This is not a bug. vscode just is stupid.
         DiscordComponents(self.client)
         user = await self.client.fetch_user(self.config.owner)
         await user.send(embed=(self.embeds.on_ready(self.client)))
 
     @commands.Cog.listener()
     async def on_message(self, ctx):
-        if ctx.content.lower().startswith("k!afk") or ctx.author.bot is True:
+        if ctx.content.lower().startswith(f"{self.config.prefix[0]}afk") or ctx.author.bot is True:
             return
         for mention in ctx.mentions:
             x = referencing.fetch_handler(mention)
@@ -94,11 +100,13 @@ class listeners(commands.Cog):
             if interaction.message.author == self.client.user:
                 if interaction.component.label == "Delete":
                     await interaction.message.delete()
+                    await interaction.respond(type=4, content=f"Deleted!")
                 elif interaction.message.mentions[0] == interaction.user and interaction.custom_id == "pollend" and interaction.message.embeds[0].footer.text == "Poll in progress...":
                     raw = referencing.poll_end_handler(interaction)
                     img, name = await handle.poll_handler(raw)
                     await interaction.channel.send(embed=(self.embeds.end_poll(raw, (interaction.message.embeds[0].description), name)), file=img)
                     await interaction.message.delete()
+                    await interaction.respond(type=4, content=f"Poll ended.")
                 elif interaction.message.embeds[0].footer.text == "Poll in progress..." and interaction.message.mentions[0] == interaction.user and interaction.custom_id in ["Yes", "No", "Abstain"]:
                     referencing.poll_handler(interaction.user, interaction)
                     await interaction.respond(type=4, content=f"Your vote has been counted!")

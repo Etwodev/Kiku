@@ -5,7 +5,14 @@ class file_types(object):
     """Defines the file_types for each function
     """
     def __init__(self):
-        self.glitch = ["jpg", "png"]
+        self.glitch = ["jpg", "jpeg", "png"]
+        self.saucenao = ["jpg", "jpeg", "png", "gif"]
+        self.polarize = ["jpg", "jpeg", "png"]
+        self.duotone = ["jpg", "jpeg", "png"]
+        self.deepfry = ["jpg", "jpeg", "png"]
+        self.lookup = ["jpg", "jpeg", "png", "gif", "mov", "mp4", "webm"]
+        self.lookup_ext = ["mov", "mp4", "webm"]
+        self.config = startup.get("config.json")
 
 
 class embeded(object):
@@ -48,7 +55,7 @@ class embeded(object):
         embed.set_footer(text="Poll in progress...")
         return embed
     
-    def end_poll(self, res, msg, name):
+    def end_poll(self, res, msg, file_name):
         YesRES = res["Yes"]
         NoRES = res["No"]
         AbstainRES = res["Abstain"]
@@ -56,7 +63,7 @@ class embeded(object):
         embed.add_field(name="Yes:", value=f"{YesRES} votes")
         embed.add_field(name="Abstained:", value=f"{AbstainRES} votes")
         embed.add_field(name="No:", value=f"{NoRES} votes")
-        embed.set_image(url=f"attachment://pie_chart.png")
+        embed.set_image(url=f"attachment://{file_name}")
         return embed
     
     def CommandOnCooldown(self, err):
@@ -75,12 +82,17 @@ class embeded(object):
         return embed
     
     def MissingRequiredArgument(self, err):
-        msg = f'Missing the required argument "{err.param}"! Please try the command again. Use "a!help" to get command-specific information.'
+        msg = f'Missing the required argument "{err.param}"! Please try the command again. Use "{self.config.prefix[0]}help" to get command-specific information.'
+        embed = discord.Embed(description=msg, color=0xc83737)
+        return embed
+
+    def UserInputError(self, err):
+        msg = f'Something went wrong with your input! {err}'
         embed = discord.Embed(description=msg, color=0xc83737)
         return embed
 
     def TooManyArguments(self):
-        msg = 'Too many arguments! Please try the command again. Use "a!help" to get command-specific information.'
+        msg = f'Too many arguments! Please try the command again. Use "{self.config.prefix[0]}help" to get command-specific information.'
         embed = discord.Embed(description=msg, color=0xa68591)
         return embed
 
@@ -111,6 +123,11 @@ class embeded(object):
         embed.add_field(name="Something else?", value="Try resending the command!")
         return embed
 
+    def BadArgument(self):
+        msg = f'Bad argument! Are you inputting string for an amount? Try using "{self.config.prefix[0]}help" for more information...'
+        embed = discord.Embed(description=msg, color=0xc83737)
+        return embed
+
     def UnknownDiscordError(self):
         msg = "I don't know what happened, sorry! Please try again."
         embed = discord.Embed(description=msg, color=0xa68591)
@@ -132,3 +149,53 @@ class embeded(object):
     def ping_discord_b(self, ms):
         embed = discord.Embed(title=('Pong!'), description=(f'Client took {ms}ms to send to discord.'), color=0xbb54aa)
         return embed
+
+    def glitcher(self, img, file_name):
+        embed = discord.Embed(title="Glitching has finished!", description=("Here is your image."), color=0xc83737)
+        embed.set_image(url=f"attachment://{file_name}")
+        return embed
+
+    def saucenao(self, results):
+        embed = discord.Embed(title=(f'{results[0].title}'), url=(results[0].urls[0]), description=(f'{results[0].similarity}% Similarity'), color=0xc83737)
+        embed.set_author(name=results[0].author)
+        embed.set_thumbnail(url=results[0].thumbnail)
+        return embed
+
+    def polarizer(self, img, file_name):
+        embed = discord.Embed(title="Image has been polarized!", description=("Here is your image."), color=0xc83737)
+        embed.set_image(url=f"attachment://{file_name}")
+        return embed
+
+    def duotoner(self, img, file_name):
+        embed = discord.Embed(title="Duotone has finished!", description=("Here is your image."), color=0xc83737)
+        embed.set_image(url=f"attachment://{file_name}")
+        return embed
+
+    def deepfry(self, img, file_name):
+        embed = discord.Embed(title="Deepfrying has finished!", description=("Here is your image."), color=0xc83737)
+        embed.set_image(url=f"attachment://{file_name}")
+        return embed
+
+    def lookup_rw(self, url):
+        embed = discord.Embed(title="Here you go!", description=("Enjoy..."), color=0xc83737)
+        embed.set_image(url=url)
+        return embed
+
+    def lookup_wt(self):
+        embed = discord.Embed(title="Loading...", color=0xc83737)
+        return embed
+
+    def lookup_ld(self, img, file_name):
+        embed = discord.Embed(title="Here you go!", description=("Enjoy..."), color=0xc83737)
+        embed.set_image(url=f"attachment://{file_name}")
+        return embed
+
+    def tags(self, results, tag):
+        if len(results) == 0:
+            embed = discord.Embed(title=f"I found no matching tags...", color=0xc83737)
+            return embed
+        else:
+            embed = discord.Embed(title=f"I found '{len(results)}' matches for '{tag}'!", color=0xc83737)
+            for i, x in enumerate(results):
+                embed.add_field(name=x, value=i)
+            return embed

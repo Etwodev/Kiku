@@ -1,5 +1,5 @@
 from discord.ext import commands
-import discord
+import discord, importlib, sys
 from utils import database
 
 command_attrs = {'hidden':True}
@@ -39,8 +39,19 @@ class OwnerCog(commands.Cog, name='Owner Commands', command_attrs=command_attrs)
         Remember to use dot path. e.g: cogs.owner"""
 
         try:
-            self.client.unload_extension(cog)
-            self.client.load_extension(cog)
+            y = cog.split(" ")
+            if y[0] == "-mod":
+                y.pop(0)
+                for z in y:
+                    for module in list(sys.modules.values()):
+                        if module.__name__ == z:
+                            importlib.reload(module)
+                            print(f"Module {z} was reloaded.")
+                        else:
+                            continue
+            else:
+                self.client.unload_extension(y[0])
+                self.client.load_extension(y[0])
         except Exception as e:
             await ctx.reply(f'**`ERROR:`** {type(e).__name__} - {e}')
         else:

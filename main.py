@@ -11,7 +11,7 @@ client = commands.Bot(command_prefix=config.prefix, intents=discord.Intents(guil
 client.remove_command("help")
 
 if __name__ == '__main__':
-    for Extension in ["cogs.info", "cogs.listeners", "cogs.owner"]:
+    for Extension in ["cogs.info", "cogs.listeners", "cogs.owner", "cogs.images", "cogs.fun"]:
         try:
             client.load_extension(Extension)
         except Exception as e:
