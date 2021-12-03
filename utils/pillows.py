@@ -11,17 +11,19 @@ import deeppyer
 
 from moviepy.editor import *
 
-def seek_gif_save(url: str, msg_id: int, path=f"tmp/", fmt="GIF",):
+def seek_gif_save(url: str, msg_id: int, path="tmp/", max_duration=5, resize_factor=0.3, fps=10, fuzz=50, program="imageio"):
+    '''Converts a video file to a gif, with a max length of 5 seconds due to discord file-size restrictions
+    '''
     nm = str(msg_id) + ".gif"
     clip = VideoFileClip(url)
-    if round(clip.duration) > 5:
-        clip = clip.subclip(0, 5)
-    clip = clip.resize(0.3)
-    clip.write_gif(path + nm, fps=10, loop=0, program="imageio", fuzz=50)
+    if round(clip.duration) > max_duration:
+        clip = clip.subclip(0, max_duration)
+    clip = clip.resize(resize_factor)
+    clip.write_gif(path + nm, fps=fps, loop=0, program=program, fuzz=fuzz)
     file = discord.File(path + nm)
     return file, nm
 
-def seek_save(img, fmt, nm):
+def seek_save(img: PIL.Image, fmt: str, nm: str):
     '''Saves pillow files into memory
     '''
     arr = io.BytesIO()
@@ -30,7 +32,7 @@ def seek_save(img, fmt, nm):
     file = discord.File(arr, nm)
     return file, nm
 
-def seek_savempl(img, fmt, nm):
+def seek_savempl(img: PIL.Image, fmt: str, nm: str):
     '''Saves matplotlib files into memory
     '''
     arr = io.BytesIO()
@@ -39,43 +41,42 @@ def seek_savempl(img, fmt, nm):
     file = discord.File(arr, nm)
     return file, nm
 
-def poll(data):
-    labels = []
-    num = []
-    for key, value in data.items():
-        if key == "Yes" and int(value) > 0:
-            labels.append("Yes")
-            num.append(value)
-        elif key == "Abstain" and int(value) > 0:
-            labels.append("Abstained")
-            num.append(value)
-        elif key == "No" and int(value) > 0:
-            labels.append("No")
-            num.append(value)
-    plt.pie(num, labels = labels, startangle = 90)
+def poll(data: dict):
+    '''Converts dictionary data into a matplotlib image
+    '''
+    data = {key:val for key, val in data.items() if val != 0}
+    plt.pie(data.values(), labels = data.keys(), startangle = 90)
     file, name = seek_savempl(plt, "png", "pie_chart.png")
     return file, name
 
 def glitcher(file, amount: int):
+    '''Glitches the input image
+    '''
     glitcher = ImageGlitcher()
     gltch_img = PIL.Image.open(io.BytesIO(file))
-    gltch_img = glitcher.glitch_image(gltch_img, int(amount), color_offset=True)
+    gltch_img = glitcher.glitch_image(gltch_img, amount, color_offset=True)
     file, name = seek_save(gltch_img, "png", "glitch_image.png")
     return file, name
 
 def polarize(file, bits: int):
+    '''Polarizes the input image
+    '''
     polar_img = PIL.Image.open(io.BytesIO(file))
-    polar_img = PIL.ImageOps.posterize(polar_img, int(bits))
+    polar_img = PIL.ImageOps.posterize(polar_img, bits)
     file, name = seek_save(polar_img, "png", "polar_image.png")
     return file, name
 
 def duotone(file, black: tuple, white: tuple):
+    '''Applies a duotone effect on an image, using colorize. Accepts tuples of rgb for input
+    '''
     duo_img = PIL.Image.open(io.BytesIO(file)).convert("L")
     duo_img = PIL.ImageOps.colorize(duo_img, black=black, white=white, blackpoint=126, whitepoint=128)
     file, name = seek_save(duo_img, "png", "duotone_image.png")
     return file, name
 
 async def deepfry(file):
+    '''Deepfries the input image
+    '''
     deep_img = PIL.Image.open(io.BytesIO(file))
     deep_img = await deeppyer.deepfry(deep_img, flares=False)
     file, name = seek_save(deep_img, "png", "deep_image.png")

@@ -2,6 +2,8 @@ import json
 from collections import namedtuple
 
 def get(file):
+    '''Seamlessly open any json files, used for configuration
+    '''
     try:
         with open(file, encoding='utf8') as data:
             return json.load(data, object_hook=lambda d: namedtuple('X', d.keys())(*d.values()))
@@ -12,6 +14,8 @@ def get(file):
 
 
 def keys_exists(element, *keys):
+    '''Check if a key exists in a dictionary
+    '''
     if not isinstance(element, dict):
         raise AttributeError('keys_exists() expects dict as first argument.')
     if len(keys) == 0:

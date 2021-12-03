@@ -1,28 +1,14 @@
 from saucenao_api import AIOSauceNao
 from pygelbooru import Gelbooru
-from discord.ext import commands
-import re, discord, json, random, os
+import re, json, random
 from utils import web, startup
-
-########HANDLER########
-# - Hanlder acts as a way to connect API and databases with command calls and embeds.
-#########TODO#########
-# ----------------------
-# - Handler gets a!gacha request.
-# - Checks if user has sufficient money with select.
-# - If True, create a gatcha roll and return the result, then append profile.
-# - If False, send the regarding message.
-# ----------------------
-# - Add Gelbooru API
-# ---------------------
 
 config = startup.get("config.json")
 
 #######API FUNCTIONS########
 
 async def saucenao(url: str):
-    """This is a basic-level saucenao handler.
-    It can be run in executor, asyncronously, not recommened.
+    '''This is a basic-level saucenao handler.
     
     returns a SauceNao object, results.
     -> results[0].thumbnail     # temporary URL for picture preview
@@ -31,7 +17,7 @@ async def saucenao(url: str):
     -> results[0].urls          # list of urls to the piece
     -> results[0].author        # author of the piece
     -> results[0].raw           # raw result
-    """
+    '''
     results = await AIOSauceNao(api_key=config.api_keys.saucenao).from_url(url)
     results[0].urls.append(results[0].thumbnail)
     return results
@@ -65,7 +51,7 @@ async def gelbooru_tag(tag: str):
 
 #######OTHER WEB BASED FUNCTIONS#######
 
-async def emoji_handler(emoji):
+async def emoji_handler(emoji: str):
     """Handles fetching and managing emotes through regex.
     returns url, name
     """
@@ -91,67 +77,3 @@ async def emoji_handler(emoji):
             return f"https://cdn.discordapp.com/emojis/{eid}.png", lookup
     else:
         return None, None
-
-#######BASIC PARSING#######
-
-def predicate(message, formats=["png", "jpeg", "jpg", "webp", "webp?size=1024", "gif", "mkv", "mov", "mp4", "webm"]):
-    """Fetches newest attachment in the channel: returns attachment path, file extension
-    """
-    for attachment in message.attachments:
-        for image_type in formats:
-            if attachment.filename.lower().endswith(image_type):
-                return attachment.url, image_type
-    for embed in message.embeds:
-        if embed.image.url is not discord.Embed.Empty:
-            for image_type in formats:
-                if embed.image.url.lower().endswith(image_type):
-                    return embed.image.url, image_type
-    for url in list(re.findall(r'(https?://[^\s]+)', message.content)):
-        for image_type in formats:
-            if url.lower().endswith(image_type):
-                return url, image_type
-
-def message_predicate(message, formats=["png", "jpeg", "jpg", "webp", "webp?size=1024", "gif", "mkv", "mov", "mp4", "webm"]):
-    """Alternate version of predicate that returns the message as well.
-    """
-    for attachment in message.attachments:
-        for image_type in formats:
-            if attachment.filename.lower().endswith(image_type):
-                return attachment.url, image_type, message
-    for embed in message.embeds:
-        if embed.image.url is not discord.Embed.Empty:
-            for image_type in formats:
-                if embed.image.url.lower().endswith(image_type):
-                    return embed.image.url, image_type, message
-    for url in list(re.findall(r'(https?://[^\s]+)', message.content)):
-        for image_type in formats:
-            if url.lower().endswith(image_type):
-                return url, image_type, message
-
-#######CHECK PARSING#######
-
-def is_hex(string: str):
-    match = re.search(r'^#(?:[0-9a-fA-F]{3}){1,2}$', string)
-    if match:
-        return True
-    else:
-        return False
-
-def hex_to_rgb(hex: str):
-    hex = hex.lstrip('#')
-    lv = len(hex)
-    return tuple(int(hex[i:i + lv // 3], 16) for i in range(0, lv, lv // 3))
-
-#######CONVERT CHECk#######
-
-def exts_allowed(exts: list, url: str):
-    for x in exts:
-        if url.lower().endswith(x):
-            return True
-    return False
-
-def cleanup_gif(msg_id):
-    if os.path.exists(f"tmp/{msg_id}.gif"):
-        os.remove(f"tmp/{msg_id}.gif")
-    else:
-        return

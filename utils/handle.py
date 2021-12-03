@@ -3,41 +3,41 @@ import asyncio, concurrent.futures
 
 #######ASYNCIO EXECUTOR HANDLERS#########
 
-async def poll_handler(data):
-    """Data in this case would be referenced poll data, see usage in code
-    """
+async def poll_handler(data: dict):
+    '''Data in this case would be referenced poll data, see usage in code
+    '''
     loop = asyncio.get_running_loop()
     with concurrent.futures.ThreadPoolExecutor() as pool:
-        result, name = await loop.run_in_executor(pool, pillows.poll, data)
-    return result, name
+        img, name = await loop.run_in_executor(pool, pillows.poll, data)
+    return img, name
 
 async def glitch_handler(img, amount: int):
-    """Data will be the parameters for this.
-    """
+    '''An integer "amount" will be used for glitch amount. Bytes-type/read object expected for img
+    '''
     loop = asyncio.get_running_loop()
     with concurrent.futures.ThreadPoolExecutor() as pool:
-        img, name = await loop.run_in_executor(pool, pillows.glitcher, img, int(amount))
+        img, name = await loop.run_in_executor(pool, pillows.glitcher, img)
     return img, name
 
 async def polarize_handler(img, bits: int):
-    """Data will be the parameters for this.
-    """
+    '''Bits is expected as an integer, read or bytes-type object expected for img
+    '''
     loop = asyncio.get_running_loop()
     with concurrent.futures.ThreadPoolExecutor() as pool:
-        img, name = await loop.run_in_executor(pool, pillows.polarize, img, int(bits))
+        img, name = await loop.run_in_executor(pool, pillows.polarize, img, bits)
     return img, name
 
-async def duotone_handler(img, white: str, black: str):
-    """Data will be the parameters for this.
-    """
+async def duotone_handler(img, white: tuple, black: tuple):
+    '''White and Black are RGB Tuple values converted from hex. Read or bytes-type is again expected for img
+    '''
     loop = asyncio.get_running_loop()
     with concurrent.futures.ThreadPoolExecutor() as pool:
         img, name = await loop.run_in_executor(pool, pillows.duotone, img, black, white)
     return img, name
 
-async def convert_gif(url, msg_id):
-    """Data will be the parameters for this.
-    """
+async def gif_handler(url: str, msg_id: str):
+    '''Both url and msg_id is expected as a string for parsing
+    '''
     loop = asyncio.get_running_loop()
     with concurrent.futures.ThreadPoolExecutor() as pool:
         img, name = await loop.run_in_executor(pool, pillows.seek_gif_save, url, msg_id)
