@@ -34,14 +34,14 @@ async def gelbooru_sfw(tags: list):
     gelbooru = Gelbooru(config.api_keys.gelbooru.userid, config.api_keys.gelbooru.key)
     results = await gelbooru.search_posts(tags=tags, exclude_tags=config.exclude_sfw_tags)
     if len(results) == 0:
-        raise commands.UserInputError(f"I could not find anything with those tags! Are you inputting correctly? Try looking up the tag with {config.prefix[0]}tag [tag] and try again!")
+        return None
     return results[random.randint(0, len(results)-1)]
 
 async def gelbooru_nsfw(tags: list):
     gelbooru = Gelbooru(config.api_keys.gelbooru.userid, config.api_keys.gelbooru.key)
     results = await gelbooru.search_posts(tags=tags, exclude_tags=config.exclude_nsfw_tags)
     if len(results) == 0:
-        raise commands.UserInputError(f"I could not find anything with those tags! Are you inputting correctly? Try looking up the tag with {config.prefix[0]}tag [tag] and try again!")
+        return None
     return results[random.randint(0, len(results)-1)]
 
 async def gelbooru_tag(tag: str):

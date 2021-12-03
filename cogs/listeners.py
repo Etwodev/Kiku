@@ -8,7 +8,6 @@ class listeners(commands.Cog):
         self.client = client
         self.embeds = definitions.embeded()
         self.config = startup.get("config.json")
-        self.poll_emojis = ["✅", "♻️", "❌"]
 
     @tasks.loop(minutes=10)
     async def status_task(self):
