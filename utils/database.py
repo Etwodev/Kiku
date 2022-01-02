@@ -1,11 +1,11 @@
-from utils import startup
+from utils import config
 import mysql.connector
 import discord
 
 class MySQL:
     def __init__(self):
         self.connection = None
-        self.config = startup.get("config.json")
+        self.config = config.get("config.json")
 
     def __enter__(self):
         self.connection = mysql.connector.connect(user=self.config.sql.user, password=self.config.sql.password, db=self.config.sql.database, host=self.config.sql.host, autocommit=True)
@@ -21,43 +21,22 @@ class MySQL:
         except:
             self.connection.close()
 
-
-##################AFK & PROFILE HANDLING##################
-
-def profile_fetch_user(user: discord.Member, *args, **kwargs):
-    """Queries the main server and fetches one response.
-    This should **NOT** be used in tandem with UPDATE or INPUT,
-    as it can create some desync problems. All operations should be done in **ONE** go.
-    """
-    data = "SELECT * FROM tbl_profile WHERE user_id = %s"
-    values = (user.id,)
+def fetch_one(sql: str, values: tuple) -> tuple:
     with MySQL() as connection:
         db = connection.cursor()
-        db.execute(data, values)
+        db.execute(sql, values)
         return db.fetchone()
 
-
-def profile_update_user(user: discord.Member, var1, var2:int):
-    """Updates the main server based upon the specified data load.
-    Calls should happen just within this section, as it will be cancelled upon exit.
-    Load (the user's profile) -> should be converted into a string for updating LONGTEXT().
-    """
-    data = "UPDATE tbl_profile SET afk_message = %s, is_afk = %s WHERE user_id = %s"
-    values = (var1, var2, user.id,)
+def fetch_all(sql: str, values: tuple) -> tuple:
     with MySQL() as connection:
         db = connection.cursor()
-        db.execute(data, values)
-        return
+        db.execute(sql, values)
+        return db.fetchall()
 
-def profile_insert_user(user: discord.Member, date: str):
-    """Inserts into main server for first-time users.
-    This should be called if fetch_user() returns None.
-    """
-    sql = "INSERT INTO tbl_profile(user_id, created_at) VALUES(%s, %s)"
-    val = (user.id, date,)
+def insert(sql: str, values: tuple):
     with MySQL() as connection:
         db = connection.cursor()
-        db.execute(sql, val)
+        db.execute(sql, values)
         return
 
 ##################POLL HANDLING##################

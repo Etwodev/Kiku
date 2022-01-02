@@ -1,13 +1,19 @@
-import discord, asyncio
+import discord, asyncio, ast
+from discord import message
 from discord.ext import commands, tasks
-from utils import referencing, startup, definitions, handle
+from discord.ext.commands import context
+import utils.config, utils.embeds.errors, utils.embeds.listeners, utils.referencing, utils.threading, utils.api
 from discord_components import DiscordComponents, Button, Select, SelectOption
 
 class listeners(commands.Cog):
     def __init__(self, client):
         self.client = client
-        self.embeds = definitions.embeded()
-        self.config = startup.get("config.json")
+        self.referencing = utils.referencing
+        self.errors_embeds = utils.embeds.errors
+        self.listeners_embeds = utils.embeds.listeners
+        self.threading = utils.threading
+        self.api = utils.api
+        self.config = utils.config.get("config.json")
 
     @tasks.loop(minutes=10)
     async def status_task(self):
@@ -16,49 +22,49 @@ class listeners(commands.Cog):
     @commands.Cog.listener()
     async def on_command_error(self, ctx, err):
         print(f'User "{ctx.author.id}" Triggered Error: "{err}"')
+        embed = self.errors_embeds.ErrorsEmbed(ctx=ctx, err=err)
 
-        if isinstance(err, commands.CommandOnCooldown):
-            msg = await ctx.reply(embed=self.embeds.CommandOnCooldown(err))
-            await msg.delete(delay=3)
+        if isinstance(err, commands.UserInputError):
+            embed.UserInputError()
+
+        elif isinstance(err, commands.CommandOnCooldown):
+            embed.CommandOnCooldown()
 
         elif isinstance(err, discord.errors.Forbidden):
-            await ctx.reply(embed=self.embeds.Forbidden())
+            embed.Forbidden()
 
         elif isinstance(err, commands.TooManyArguments):
-            await ctx.reply(embed=self.embeds.TooManyArguments())
+            embed.TooManyArguments()
 
         elif isinstance(err, commands.MaxConcurrencyReached):
-            await ctx.reply(embed=self.embeds.MaxConcurrencyReached())
+            embed.MaxConcurrencyReached()
 
         elif isinstance(err, commands.MissingRequiredArgument):
-            await ctx.reply(embed=self.embeds.MissingRequiredArgument(err))
+            embed.MissingRequiredArgument()
 
         elif isinstance(err, commands.MessageNotFound):
-            await ctx.reply(embed=self.embeds.MessageNotFound())
+            embed.MessageNotFound()
 
         elif isinstance(err, commands.ChannelNotFound):
-            await ctx.reply(embed=self.embeds.ChannelNotFound())
+            embed.ChannelNotFound()
 
         elif isinstance(err, commands.NSFWChannelRequired):
-            await ctx.reply(embed=self.embeds.NSFWChannelRequired())
+            embed.NSFWChannelRequired()
 
         elif isinstance(err, commands.NoPrivateMessage):
-            await ctx.reply(embed=self.embeds.NoPrivateMessage())
+            embed.NoPrivateMessage()
         
         elif isinstance(err, commands.errors.BadArgument):
-            await ctx.reply(embed=self.embeds.BadArgument())
+            embed.BadArgument()
 
-        elif isinstance(err, commands.UserInputError):
-            await ctx.reply(embed=self.embeds.UserInputError(err))
+        elif isinstance(err, commands.MissingPermissions):
+            embed.MissingPermissions()
 
-        elif isinstance(err, commands.CommandNotFound):
-            pass
-
-        elif isinstance(err, commands.PartialEmojiConversionFailure):
-            pass
-        
         else:
+            embed.UnknownDiscordError()
             raise err
+
+        await ctx.reply(embed=embed.embed)
 
 
     @commands.Cog.listener()
@@ -68,52 +74,99 @@ class listeners(commands.Cog):
         except IndexError:
             pass
         else:
-            await to_send.send(embed=(self.embeds.on_guild_join()))
+            embed = self.listeners_embeds.ListenersEmbed()
+            embed.OnGuildEmbed()
+            await to_send.send(embed=embed.embed)
     
     @commands.Cog.listener()
     async def on_ready(self):
-        self.status_task.restart() # This is not a bug. vscode just is stupid.
+        self.status_task.restart()
         DiscordComponents(self.client)
         user = await self.client.fetch_user(self.config.owner)
-        await user.send(embed=(self.embeds.on_ready(self.client)))
+        embed = self.listeners_embeds.ListenersEmbed()
+        embed.OnReadyEmbed(client=self.client)
+        await user.send(embed=embed.embed)
 
     @commands.Cog.listener()
-    async def on_message(self, ctx):
-        if ctx.content.lower().startswith(f"{self.config.prefix[0]}afk") or ctx.author.bot is True:
+    async def on_message(self, message):
+        fields = {}
+        if message.content.lower().startswith(self.config.prefix[0] + "afk") or message.author.bot is True:
             return
-        for mention in ctx.mentions:
-            x = referencing.fetch_handler(mention)
-            if x[3] == 1:
-                if mention.id != ctx.author.id:
-                    await ctx.reply(embed=self.embeds.on_message(mention, x[4]))
-        x = referencing.fetch_handler(ctx.author)
-        if x[0] == str(ctx.author.id):
-            if x[3] == 1:
-                referencing.update_handler(ctx.author, "User is afk.", 0)
-                await ctx.reply(embed=discord.Embed(title="Welcome back!", description="I have removed your afk.", color=0xc83737))
-                return
+        elif message.mentions:
+            for i, mention in enumerate(message.mentions):
+                if i > 5:
+                    break
+                else:
+                    profile = self.referencing.ProfileHeader(mention)
+                    if profile.is_afk():
+                        if mention.id != message.author.id:
+                            fields[mention.name] = profile.afk_message
+        profile = self.referencing.ProfileHeader(message.author)
+        if profile.is_afk():
+            profile.remove_afk()
+            fields[message.author.name] = "Welcome back, I removed your afk."
+        if fields.keys():
+            embed = self.listeners_embeds.ListenersEmbed()
+            embed.MessageAFKEmbed(message=message, fields=fields)
+            await message.reply(embed=embed.embed)
+        else:
+            return
 
     @commands.Cog.listener()
     async def on_button_click(self, interaction):
-        try:
-            if interaction.message.author == self.client.user:
-                if interaction.component.label == "Delete":
-                    await interaction.message.delete()
-                    await interaction.respond(type=4, content=f"Deleted!")
-                elif interaction.message.mentions[0] == interaction.user and interaction.custom_id == "pollend" and interaction.message.embeds[0].footer.text == "Poll in progress...":
-                    raw = referencing.poll_end_handler(interaction)
-                    img, name = await handle.poll_handler(raw)
-                    await interaction.channel.send(embed=(self.embeds.end_poll(raw, (interaction.message.embeds[0].description), name)), file=img)
-                    await interaction.message.delete()
-                    await interaction.respond(type=4, content=f"Poll ended.")
-                elif interaction.message.embeds[0].footer.text == "Poll in progress..." and interaction.message.mentions[0] == interaction.user and interaction.custom_id in ["Yes", "No", "Abstain"]:
-                    referencing.poll_handler(interaction.user, interaction)
-                    await interaction.respond(type=4, content=f"Your vote has been counted!")
-            else:
-                return
-        except IndexError:
-            raw = referencing.poll_end_handler(interaction)
+        if interaction.message.author != self.client.user:
+            return
+        elif not interaction.message.embeds:
             await interaction.message.delete()
+            await interaction.respond(type=4, content="The embed was removed, deleting now.")
+        elif interaction.component.label == "I do" and interaction.user.id == list(ast.literal_eval(interaction.custom_id).values())[0]:
+            profile = self.referencing.ProfileHeader(interaction.user)
+            married = self.referencing.ProfileHeader(interaction.message.mentions[0])
+            if profile.set_marriage(married):
+                embed = self.listeners_embeds.ListenersEmbed()
+                embed.ButtonMarriageYesEmbed(url=await self.api.tenor("anime+marriage", 8), user_a=profile.user, user_b=married.user)
+                await interaction.channel.send(embed=embed.embed)
+                await interaction.message.delete()
+            else:
+                await interaction.message.delete()
+                raise commands.UserInputError("One user is already married! I mean, you tried...")
+        elif interaction.component.label == "Denied" and interaction.user.id == list(ast.literal_eval(interaction.custom_id).values())[0]:
+            embed = self.listeners_embeds.ListenersEmbed()
+            embed.ButtonMarriageNoEmbed(url=await self.api.tenor("anime+sad", 8), user=interaction.message.mentions[0])
+            await interaction.channel.send(embed=embed.embed)
+            await interaction.message.delete()
+              
+        elif interaction.component.label == "Accept" and interaction.user.id == list(ast.literal_eval(interaction.custom_id).values())[0]:
+            profile = self.referencing.HaremHeader(interaction.user)
+            owner = self.referencing.HaremHeader(interaction.message.mentions[0])
+            if owner.add(profile):
+                embed = self.listeners_embeds.ListenersEmbed()
+                embed.ButtonHaremYesEmbed(url=await self.api.tenor("anime+marriage", 8), user_a=profile.user, user_b=owner.user)
+                await interaction.channel.send(embed=embed.embed)
+                await interaction.message.delete()
+            else:
+                await interaction.message.delete()
+                raise commands.UserInputError("User is already in a harem or the harem has reached the max users!")
+        elif interaction.component.label == "Reject" and interaction.user.id == list(ast.literal_eval(interaction.custom_id).values())[0]:
+            embed = self.listeners_embeds.ListenersEmbed()
+            embed.ButtonHaremNoEmbed(url=await self.api.tenor("anime+sad", 8), user=interaction.message.mentions[0])
+            await interaction.channel.send(embed=embed.embed)
+            await interaction.message.delete()
+        elif interaction.component.label == "Delete":
+            await interaction.message.delete()
+            await interaction.respond(type=4, content="Deleted!")
+        elif interaction.message.mentions[0] == interaction.user and interaction.component.label == "End":
+            raw = self.referencing.poll_handler_end(interaction=interaction)
+            file, file_name = await self.threading.poll_handler(raw)
+            embed = self.listeners_embeds.ListenersEmbed()
+            embed.ButtonPollEmbed(message=interaction.message.embeds[0].description, file_name=file_name, results=raw)
+            await interaction.channel.send(embed=embed.embed, file=file)
+            await interaction.message.delete()
+            await interaction.respond(type=4, content="Poll ended.")
+        elif interaction.component.label in ["Yes", "No", "Abstain"]:
+            self.referencing.poll_handler(user=interaction.user, interaction=interaction)
+            await interaction.respond(type=4, content="Your vote has been counted!")
+
 
 def setup(client):
     client.add_cog(listeners(client))

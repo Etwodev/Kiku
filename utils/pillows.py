@@ -1,4 +1,7 @@
 import matplotlib
+
+import subprocess
+
 matplotlib.use('Agg')
 
 from matplotlib import pyplot as plt
@@ -9,17 +12,19 @@ from glitch_this import ImageGlitcher
 
 import deeppyer
 
-from moviepy.editor import *
-
-def seek_gif_save(url: str, msg_id: int, path="tmp/", max_duration=5, resize_factor=0.3, fps=10, fuzz=50, program="imageio"):
+def seek_gif_save(url: str, msg_id: int, path="tmp/"):
     '''Converts a video file to a gif, with a max length of 5 seconds due to discord file-size restrictions
     '''
     nm = str(msg_id) + ".gif"
-    clip = VideoFileClip(url)
-    if round(clip.duration) > max_duration:
-        clip = clip.subclip(0, max_duration)
-    clip = clip.resize(resize_factor)
-    clip.write_gif(path + nm, fps=fps, loop=0, program=program, fuzz=fuzz)
+    subprocess.run(
+        ['ffmpeg', '-hide_banner', 
+         '-loglevel', 'error',
+         '-i', url,
+         '-vf',
+         'fps=10,scale=320:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse',
+         '-fs','8M',
+         '-loop', '0', path+nm]
+        )
     file = discord.File(path + nm)
     return file, nm
 
@@ -53,7 +58,7 @@ def glitcher(file, amount: int):
     '''Glitches the input image
     '''
     glitcher = ImageGlitcher()
-    gltch_img = PIL.Image.open(io.BytesIO(file))
+    gltch_img = PIL.Image.open(io.BytesIO(file)).convert("RGB") 
     gltch_img = glitcher.glitch_image(gltch_img, amount, color_offset=True)
     file, name = seek_save(gltch_img, "png", "glitch_image.png")
     return file, name
@@ -61,7 +66,7 @@ def glitcher(file, amount: int):
 def polarize(file, bits: int):
     '''Polarizes the input image
     '''
-    polar_img = PIL.Image.open(io.BytesIO(file))
+    polar_img = PIL.Image.open(io.BytesIO(file)).convert("RGB") 
     polar_img = PIL.ImageOps.posterize(polar_img, bits)
     file, name = seek_save(polar_img, "png", "polar_image.png")
     return file, name
@@ -77,7 +82,7 @@ def duotone(file, black: tuple, white: tuple):
 async def deepfry(file):
     '''Deepfries the input image
     '''
-    deep_img = PIL.Image.open(io.BytesIO(file))
+    deep_img = PIL.Image.open(io.BytesIO(file)).convert("RGB") 
     deep_img = await deeppyer.deepfry(deep_img, flares=False)
     file, name = seek_save(deep_img, "png", "deep_image.png")
     return file, name

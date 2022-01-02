@@ -1,7 +1,9 @@
 import json
 from collections import namedtuple
+import os
 
-def get(file):
+
+def get(file: str):
     '''Seamlessly open any json files, used for configuration
     '''
     try:
@@ -27,3 +29,15 @@ def keys_exists(element, *keys):
         except KeyError:
             return False
     return True
+
+
+def remove_file(file: str, dir="tmp/"):
+    '''Removes from specified file
+    '''
+    try:
+        if file != "README.txt":
+            os.remove(dir + file)
+    except FileNotFoundError:
+        raise FileNotFoundError("Specified file was not found")
+    except PermissionError:
+        raise PermissionError("Insufficient permissions to execute this process")

@@ -1,7 +1,5 @@
-from utils import web, startup, pillows
+from utils import pillows
 import asyncio, concurrent.futures
-
-#######ASYNCIO EXECUTOR HANDLERS#########
 
 async def poll_handler(data: dict):
     '''Data in this case would be referenced poll data, see usage in code
@@ -16,7 +14,7 @@ async def glitch_handler(img, amount: int):
     '''
     loop = asyncio.get_running_loop()
     with concurrent.futures.ThreadPoolExecutor() as pool:
-        img, name = await loop.run_in_executor(pool, pillows.glitcher, img)
+        img, name = await loop.run_in_executor(pool, pillows.glitcher, img, amount)
     return img, name
 
 async def polarize_handler(img, bits: int):
@@ -40,5 +38,5 @@ async def gif_handler(url: str, msg_id: str):
     '''
     loop = asyncio.get_running_loop()
     with concurrent.futures.ThreadPoolExecutor() as pool:
-        img, name = await loop.run_in_executor(pool, pillows.seek_gif_save, url, msg_id)
-    return img, name
+        file, nm = await loop.run_in_executor(pool, pillows.seek_gif_save, url, msg_id)
+    return file, nm

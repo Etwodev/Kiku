@@ -1,0 +1,13 @@
+{
+    "fun":{
+        "lookup": ["jpg", "jpeg", "png", "gif", "mov", "mp4", "webm"],
+        "lookup_vid": ["mov", "mp4", "webm"],
+        "saucenao": ["jpg", "jpeg", "png", "gif"]
+    },
+    "images":{
+        "glitch": ["jpg", "png", "jpeg"],
+        "deepfry": ["jpg", "png", "jpeg"],
+        "polarize": ["jpg", "png", "jpeg"],
+        "duotone": ["jpg", "png", "jpeg"]
+    }
+}

@@ -1,6 +1,5 @@
 from discord.ext import commands
 import discord, importlib, sys
-from utils import database
 
 command_attrs = {'hidden':True}
 
