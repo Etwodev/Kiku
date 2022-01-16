@@ -1,4 +1,4 @@
-import aiohttp, asyncio, aiofiles
+import aiohttp, asyncio
 
 async def get(url, fmt="text", path=None, *args, **kwargs):
     '''Get data from a url, supported "text" or "read"
@@ -11,6 +11,7 @@ async def get(url, fmt="text", path=None, *args, **kwargs):
                 return await resp.read()
             else:
                 raise EnvironmentError
+
 async def post(url, fmt="text", *args, **kwargs):
     '''Post and return data from a url, see aiohttp docs for args and kwargs
     '''
