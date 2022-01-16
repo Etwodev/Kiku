@@ -1,5 +1,6 @@
 from discord.ext import commands
 import discord, importlib, sys
+import utils.referencing
 
 command_attrs = {'hidden':True}
 
@@ -53,6 +54,20 @@ class OwnerCog(commands.Cog, name='Owner Commands', command_attrs=command_attrs)
         except EnvironmentError:
             await ctx.reply("**`An EnvironmentError Occured.`**")
             self.client.clear()
+            
+    @commands.group(name='logging')
+    async def logger(self, ctx):
+        if ctx.invoked_subcommand is None:
+            pass
+        
+    @logger.command(name="set")
+    async def set_logging(self, ctx, guild_id, channel_id):
+        logging = utils.referencing.LoggingHeader(guild_id, channel_id)
+        if logging.set_logger(ctx, guild_id, channel_id):
+            await ctx.reply("**`SUCCESS`**")
+        else:
+            await ctx.reply("**`FAILED`**")
+        
 
     async def cog_check(self, ctx):
         if not await self.client.is_owner(ctx.author):

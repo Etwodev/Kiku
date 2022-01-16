@@ -1,4 +1,6 @@
+from typing import Type
 import discord, datetime
+from discord.ext import commands
 
 from discord.user import Profile
 from utils import database
@@ -153,6 +155,37 @@ def harem_initiate(user: discord.User):
     sql = "SELECT * FROM tbl_harem WHERE user_id = %s"
     values = (user.id,)
     return database.fetch_one(sql=sql, values=values)
+
+class LoggingHeader:
+    def __init__(self, guild_log, channel_log):
+        self.guild_log = guild_log
+        self.channel_log = channel_log
+        
+        
+        self.profile = database.fetch_one(sql="SELECT * FROM tbl_logging WHERE channel_id_log = %s", values=(self.channel_log,))
+            
+    def has_image(self, message: discord.Message) -> int:
+        return int(message.attachments != None)
+            
+    def is_unchecked(self):
+        return self.profile == None
+    
+    def push(self, message: discord.Message):
+        if not self.profile:
+            return False
+        sql = "INSERT INTO tbl_logger(guild_id, message_id, channel_id, author_id, message_obj, date_created, has_image) VALUES(%s, %s, %s, %s, %s, %s, %s)"
+        values = (message.guild.id, message.id, message.channel.id, message.author.id, str(message), message.created_at, self.has_image(message),)
+        database.insert(sql=sql, values=values)
+        return True
+        
+    def set_logger(self, ctx, to_log_guild, to_log_channel):
+        if self.profile:
+            return False 
+        sql = "INSERT INTO tbl_logging(channel_id_log, guild_id_log, channel_id_send, guild_id_send) VALUES(%s, %s, %s, %s)"
+        values = (to_log_channel, to_log_guild, ctx.message.channel.id, ctx.message.id,)
+        database.insert(sql=sql, values=values)
+        return True
+        
 
 
 #################POLL HANDLING##################

@@ -89,6 +89,11 @@ class listeners(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
+        logger = self.referencing.LoggingHeader(message.guild.id, message.channel.id)
+        
+        if not logger.is_unchecked():
+            logger.push(message)
+        
         fields = {}
         if message.content.lower().startswith(self.config.prefix[0] + "afk") or message.author.bot is True:
             return
