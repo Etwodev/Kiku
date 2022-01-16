@@ -68,7 +68,14 @@ class OwnerCog(commands.Cog, name='Owner Commands', command_attrs=command_attrs)
         else:
             await ctx.reply("**`FAILED`**")
         
-
+    @logger.command(name='remove')
+    async def remove_logging(self, ctx, guild_id, channel_id):
+        logging = utils.referencing.LoggingHeader(guild_id, channel_id)
+        if logging.remove_logger(channel_id):
+            await ctx.reply("**`SUCCESS`**")
+        else:
+            await ctx.reply("**`FAILED`**")
+            
     async def cog_check(self, ctx):
         if not await self.client.is_owner(ctx.author):
             await ctx.reply("**`You aren't authorised to run this command.`**")

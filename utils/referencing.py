@@ -186,6 +186,13 @@ class LoggingHeader:
         database.insert(sql=sql, values=values)
         return True
         
+    def remove_logger(self, to_log_channel):
+        if not self.profile:
+            return False
+        sql = "DELETE FROM tbl_logging WHERE channel_id_log = %s"
+        values = (to_log_channel,)
+        database.insert(sql=sql, values=values)
+        return True
 
 
 #################POLL HANDLING##################
