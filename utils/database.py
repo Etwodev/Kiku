@@ -32,6 +32,12 @@ def fetch_all(sql: str, values: tuple) -> tuple:
         db = connection.cursor()
         db.execute(sql, values)
         return db.fetchall()
+    
+def fetch_all_none(sql: str) -> tuple:
+    with MySQL() as connection:
+        db = connection.cursor()
+        db.execute(sql)
+        return db.fetchall()
 
 def insert(sql: str, values: tuple):
     with MySQL() as connection:

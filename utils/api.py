@@ -3,14 +3,16 @@ from pygelbooru import Gelbooru
 
 import json
 
+import discord
+
 import random
 
 from utils import web, config
 
-config = config.get("config.json")
+util = config.get("config.json")
 
 async def saucenao(url: str):
-    results = await AIOSauceNao(api_key=config.api_keys.saucenao).from_url(url)
+    results = await AIOSauceNao(api_key=util.api_keys.saucenao).from_url(url)
     if not results:
         return None
     results[0].urls.append(results[0].thumbnail)
@@ -22,31 +24,42 @@ async def tenor(key_word: str, max_return: int):
         return None
     return results['results'][random.randint(1, max_return-1)]['media'][0]['gif']['url']
 
-async def waifu_pics(safety: str, catagory: str):
-    results = json.loads(await web.get(f'https://waifu.pics/api/{safety}/{catagory}'))
-    if not results:
+async def ayako_pics(catagory: str):
+    results = json.loads(await web.get(f'https://ayako.one/api/?kind={catagory}&token={util.api_keys.ayako_api}'))
+    if not results or config.keys_exists(results, "error"):
         return None
     return str(results['url'])
 
 async def gelbooru_sfw(tags: list):
-    gelbooru = Gelbooru(config.api_keys.gelbooru.userid, config.api_keys.gelbooru.key)
-    results = await gelbooru.search_posts(tags=tags, exclude_tags=config.exclude_sfw_tags)
+    gelbooru = Gelbooru(util.api_keys.gelbooru.userid, util.api_keys.gelbooru.key)
+    results = await gelbooru.search_posts(tags=tags, exclude_tags=util.exclude_sfw_tags)
     if not results:
-        return None
-    return str(results[random.randint(0, len(results)-1)])
+        return None, None
+    rand = random.randint(0, len(results)-1)
+    return str(results[rand]), results[rand].score
 
 async def gelbooru_nsfw(tags: list):
-    gelbooru = Gelbooru(config.api_keys.gelbooru.userid, config.api_keys.gelbooru.key)
-    results = await gelbooru.search_posts(tags=tags, exclude_tags=config.exclude_nsfw_tags)
+    gelbooru = Gelbooru(util.api_keys.gelbooru.userid, util.api_keys.gelbooru.key)
+    results = await gelbooru.search_posts(tags=tags, exclude_tags=util.exclude_nsfw_tags)
     if not results:
-        return None
-    return str(results[random.randint(0, len(results)-1)])
+        return None, None
+    rand = random.randint(0, len(results)-1)
+    return str(results[rand]), results[rand].score
 
 async def gelbooru_tag(tag: str):
-    gelbooru = Gelbooru(config.api_keys.gelbooru.userid, config.api_keys.gelbooru.key)
+    gelbooru = Gelbooru(util.api_keys.gelbooru.userid, util.api_keys.gelbooru.key)
     results = await gelbooru.tag_list(name_pattern=f"%{tag}%", limit=6)
     for i, value in enumerate(results):
         results[i] = value.name
     if not results:
         return None
     return results
+
+async def fetch_banner(client: discord.Client, user_id: int):
+    req = await client.http.request(discord.http.Route("GET", "/users/{uid}", uid=user_id))
+    banner_id = req["banner"]
+    if banner_id:
+        if await web.get(f"https://cdn.discordapp.com/banners/{user_id}/{banner_id}.gif?size=1024", "200"):
+            return f"https://cdn.discordapp.com/banners/{user_id}/{banner_id}.gif?size=1024"
+        return f"https://cdn.discordapp.com/banners/{user_id}/{banner_id}?size=1024"
+    return None

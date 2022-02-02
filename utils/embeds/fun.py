@@ -11,14 +11,24 @@ class FunEmbed:
     def LookupLoadingEmbed(self):
         self.embed.title = "Your image is loading..."
 
-    def LookupURLEmbed(self, url: str):
+    def LookupURLEmbed(self, url: str, score: int):
         self.embed.title = "Here you go!"
-        self.embed.description = "I hope you enjoy it...~"
+        self.embed.add_field(name="Score:", value=score)
+        self.embed.description = "I hope you enjoy it..."
         self.embed.set_image(url=url)
         
-    def LookupFileEmbed(self, file_name: str):
+    def BannerEmbed(self, url: str, user):
+        self.embed.title = f"{user.name}'s Banner"
+        self.embed.set_image(url=url)
+        
+    def ProfilePictureEmbed(self, url: str, user):
+        self.embed.title = f"{user.name}'s Profile Picture"
+        self.embed.set_image(url=url)
+        
+    def LookupFileEmbed(self, file_name: str, score: int):
         self.embed.title = "Here you go!"
-        self.embed.description = "I hope you enjoy it...~"
+        self.embed.add_field(name="Score:", value=score)
+        self.embed.description = "I hope you enjoy it..."
         self.embed.set_image(url=f"attachment://{file_name}")
 
     def SauceNAOEmbed(self, results):

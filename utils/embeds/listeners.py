@@ -46,10 +46,16 @@ class ListenersEmbed:
         self.embed.set_author(name=f"{client.user.name}", icon_url=(client.user.avatar_url))
         self.embed.add_field(name="Version:", value=(self.config.version))
         self.embed.add_field(name="Logged in as:", value=(client.user.name))
-        self.embed.add_field(name="Discord Version:", value=(discord.__version__))
+        self.embed.add_field(name="Pycord version:", value=(discord.__version__))
+        self.embed.add_field(name="Servers joined:", value=len(client.guilds))
+        self.embed.add_field(name="Modules loaded:", value=len(self.config.modules))
+        self.embed.add_field(name="Seen users:", value=len(client.users))
         self.embed.set_footer(text=f"{client.user.id}")
         self.embed.timestamp = datetime.datetime.utcnow()
         
-    def OnGuildEmbed(self):
-        self.embed.title = "Thank you for adding Ayako!" 
-        self.embed.description = f"For a list of help commands, click [here]({self.config.links.help}). If you need support, you can visit the support server [here](https://www.ayako.ga/support)!"
+    def OnGuildEmbed(self, client: discord.Client, guild: discord.Guild):
+        self.embed.timestamp = datetime.datetime.utcnow()
+        self.embed.set_footer(text=client.user.name, icon_url=client.user.avatar_url)
+        self.embed.title = f"Thank you for adding me to {guild.name}!"
+        self.embed.description = f"For a list of help commands, click [here]({self.config.links.commands}). Or if you need support, you can visit our website [here](https://www.ayako.one/support)!"
+        self.embed.set_image(url="https://ayako.one/guild.png")

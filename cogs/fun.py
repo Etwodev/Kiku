@@ -13,16 +13,38 @@ class fun(commands.Cog):
         self.embeds = utils.embeds.fun
         self.parsing = utils.parsing
         self.threading = utils.threading
+        
+    @commands.command()
+    async def banner(self, ctx):
+        if not ctx.message.mentions:
+            user = ctx.author
+        else:
+            user = ctx.message.mentions[0]
+        url = await self.api.fetch_banner(self.client, user.id)
+        if not url:
+            raise commands.UserInputError("User does not have a valid banner!")
+        embed = self.embeds.FunEmbed(ctx=ctx)
+        embed.BannerEmbed(url=url, user=user)
+        await ctx.reply(embed=embed.embed)
     
-    #Whatever you do, don't look at this code, it's illegal. I can't make it better I'm sorry.
+    @commands.command()
+    async def pfp(self, ctx):
+        if not ctx.message.mentions:
+            user = ctx.author
+        else:
+            user = ctx.message.mentions[0]
+        embed = self.embeds.FunEmbed(ctx=ctx)
+        embed.ProfilePictureEmbed(url=user.avatar_url, user=user)
+        await ctx.reply(embed=embed.embed)
+    
     @commands.command()
     async def lookup(self, ctx, *args):
         if ctx.channel.is_nsfw():
-            url = await self.api.gelbooru_nsfw(args)
+            url, score = await self.api.gelbooru_nsfw(args)
         else:
-            url = await self.api.gelbooru_sfw(args)
+            url, score = await self.api.gelbooru_sfw(args)
         if not url:
-            raise commands.UserInputError("No matching images with that tag found!")
+            raise commands.UserInputError("No matching images with those tags were found!")
         elif not self.parsing.endswith_bool(self.file_types.fun.lookup, url):
             raise commands.UserInputError("Invalid file-type encountered, please try again!")
         else:
@@ -32,11 +54,11 @@ class fun(commands.Cog):
             msg = await ctx.reply(embed=embed.embed)
             file, nm = await self.threading.gif_handler(url, ctx.message.id)
             await msg.delete()
-            embed.LookupFileEmbed(nm)
+            embed.LookupFileEmbed(nm, score)
             await ctx.reply(embed=embed.embed, components=components, file=file)
             utils.config.remove_file(nm)
         else:
-            embed.LookupURLEmbed(url)
+            embed.LookupURLEmbed(url, score)
             await ctx.reply(embed=embed.embed, components=components)
         
     @commands.command()

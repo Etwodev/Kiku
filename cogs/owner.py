@@ -1,6 +1,8 @@
+from datetime import datetime
+import requests, json
 from discord.ext import commands
-import discord, importlib, sys
-import utils.referencing
+import discord, importlib, sys, secrets
+import utils.referencing, utils.config, utils.web
 
 command_attrs = {'hidden':True}
 
@@ -8,6 +10,7 @@ class OwnerCog(commands.Cog, name='Owner Commands', command_attrs=command_attrs)
 
     def __init__(self, client):
         self.client = client
+        self.config = utils.config.get("config.json")
 
     @commands.command(name='load', hidden=True)
     async def load_cog(self, ctx, *, cog: str):
@@ -50,37 +53,27 @@ class OwnerCog(commands.Cog, name='Owner Commands', command_attrs=command_attrs)
     async def server_shutdown(self, ctx):
         try:
             await ctx.message.add_reaction(emoji="👍")
-            await self.client.logout()
+            await self.client.close()
         except EnvironmentError:
             await ctx.reply("**`An EnvironmentError Occured.`**")
             self.client.clear()
             
-    @commands.group(name='logging')
-    async def logger(self, ctx):
-        if ctx.invoked_subcommand is None:
-            pass
-        
-    @logger.command(name="set")
-    async def set_logging(self, ctx, guild_id, channel_id):
-        logging = utils.referencing.LoggingHeader(guild_id, channel_id)
-        if logging.set_logger(ctx, guild_id, channel_id):
-            await ctx.reply("**`SUCCESS`**")
+    @commands.command(name='keygen')
+    async def generate_key(self, ctx):
+        val = str(int(datetime.utcnow().timestamp())*256)
+        payload = {"token": val, "username": self.config.api_keys.web_db.username, "password": self.config.api_keys.web_db.password}
+        data = requests.post(url=self.config.links.db, data=payload)
+        if data.status_code != 201:
+            await ctx.reply(f"**`ERROR:`** Status code {data.status_code}")
         else:
-            await ctx.reply("**`FAILED`**")
-        
-    @logger.command(name='remove')
-    async def remove_logging(self, ctx, guild_id, channel_id):
-        logging = utils.referencing.LoggingHeader(guild_id, channel_id)
-        if logging.remove_logger(channel_id):
-            await ctx.reply("**`SUCCESS`**")
-        else:
-            await ctx.reply("**`FAILED`**")
-            
+            data = json.loads(data.content)
+            await ctx.reply(f"**`SUCCESS:`** New token " + str(data["token"]))
+
     async def cog_check(self, ctx):
-        if not await self.client.is_owner(ctx.author):
-            await ctx.reply("**`You aren't authorised to run this command.`**")
-            raise commands.NotOwner('**`You do not own this client.`**')
-        return True
+        if ctx.author.id in self.config.owners:
+            return True
+        await ctx.reply("**`You aren't authorised to run this command.`**")
+        raise commands.NotOwner('**`You do not own this client.`**')
 
 def setup(client):
     client.add_cog(OwnerCog(client))

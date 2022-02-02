@@ -15,9 +15,9 @@ class listeners(commands.Cog):
         self.api = utils.api
         self.config = utils.config.get("config.json")
 
-    @tasks.loop(minutes=10)
+    @tasks.loop(minutes=5)
     async def status_task(self):
-        return await self.client.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=f"the Info in {len(self.client.guilds)} servers!"))
+        await self.client.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=f"the Info in {len(self.client.guilds)} servers!"))
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx, err):
@@ -75,25 +75,22 @@ class listeners(commands.Cog):
             pass
         else:
             embed = self.listeners_embeds.ListenersEmbed()
-            embed.OnGuildEmbed()
+            embed.OnGuildEmbed(self.client, guild)
             await to_send.send(embed=embed.embed)
     
     @commands.Cog.listener()
     async def on_ready(self):
-        self.status_task.restart()
+        if not self.status_task.is_running():
+            self.status_task.start()
         DiscordComponents(self.client)
-        user = await self.client.fetch_user(self.config.owner)
         embed = self.listeners_embeds.ListenersEmbed()
         embed.OnReadyEmbed(client=self.client)
-        await user.send(embed=embed.embed)
+        for owner in self.config.owners:       
+            user = await self.client.fetch_user(owner)
+            await user.send(embed=embed.embed)
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        logger = self.referencing.LoggingHeader(message.guild.id, message.channel.id)
-        
-        if not logger.is_unchecked():
-            logger.push(message)
-        
         fields = {}
         if message.content.lower().startswith(self.config.prefix[0] + "afk") or message.author.bot is True:
             return

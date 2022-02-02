@@ -1,5 +1,17 @@
 import re, os, discord
 from utils import web
+from discord.ext import commands
+
+def input_check(msg: tuple):
+    if len(msg) > 1:
+        msg = list(msg)
+        msg.pop(0)
+        msg = '"' + f"{' '.join(msg)}" + '"'
+    elif 50 < len(msg):
+        msg = msg[:49]
+    else:
+        msg = None
+    return msg
 
 def tuple_to_str(val: tuple, lim=50) -> str:
     if len(val) == 1 or 0:
@@ -87,4 +99,4 @@ class PartialMessageEmoji:
             self.emoji_id = int(self.emoji_id)
             self.emoji_url = f"https://cdn.discordapp.com/emojis/{self.emoji_id}.png"
         except:
-            raise TypeError("Passed string was not an emoji.")
+            raise commands.UserInputError("Passed string was not an emoji.")

@@ -39,7 +39,11 @@ class profiles(commands.Cog):
             
     @commands.command()
     async def profile(self, ctx):
-        user = self.referencing.ProfileHeader(ctx.author)
+        if not ctx.message.mentions:
+            tmp = ctx.author
+        else:
+            tmp = ctx.message.mentions[0]
+        user = self.referencing.ProfileHeader(tmp)
         if user.is_married():
             married = self.client.fetch_user(user.marriage.id)
         else:

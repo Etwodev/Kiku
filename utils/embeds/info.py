@@ -14,6 +14,19 @@ class InfoEmbed:
         self.embed.description = "Click the above link to visit the list of commands!"
         self.embed.url = self.config.links.commands
         
+    def VoteEmbed(self):
+        self.embed.title = "Vote for Ayako"
+        self.embed.description = "Click on the link above to vote for Ayako!"
+        self.embed.url = self.config.links.vote
+        
+    def GiveawayEmbed(self, msg: str):
+        self.embed.title = f"Giveaway has started!"
+        self.embed.description = f"'{msg}' is being given away..."
+        
+    def ChoiceEmbed(self, items: list):
+        self.embed.title = "I have chosen:"
+        self.embed.description = random.choice(items)
+        
     def EmoteEmbed(self, emote: utils.parsing.PartialMessageEmoji, is_animated: bool):
         self.embed.title = "Here is your emote!"
         if is_animated:
