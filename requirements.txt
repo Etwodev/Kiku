@@ -7,5 +7,5 @@ matplotlib
 asyncio
 saucenao_api
 pygelbooru
-asyncio
-aiohttp
+glitch_this
+deeppyer
