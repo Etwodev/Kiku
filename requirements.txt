@@ -8,8 +8,4 @@ asyncio
 saucenao_api
 pygelbooru
 glitch_this
-<<<<<<< HEAD
 deeppyer
-=======
-deeppyer
->>>>>>> 01a29f78ead8d1c8102beb3ed2dc315c4ba3472f
