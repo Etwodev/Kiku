@@ -1,6 +1,11 @@
 import re, os, discord
 from utils import web
 from discord.ext import commands
+import functools
+
+
+def bitmask_gen(indexes: list):
+    return functools.reduce(lambda x, y: x + (1 << y), indexes, 0)
 
 def input_check(msg: tuple):
     if len(msg) > 1:

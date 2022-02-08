@@ -33,10 +33,10 @@ async def duotone_handler(img, white: tuple, black: tuple):
         img, name = await loop.run_in_executor(pool, pillows.duotone, img, black, white)
     return img, name
 
-async def gif_handler(url: str, msg_id: str):
+async def gif_handler(url: str):
     '''Both url and msg_id is expected as a string for parsing
     '''
     loop = asyncio.get_running_loop()
     with concurrent.futures.ThreadPoolExecutor() as pool:
-        file, nm = await loop.run_in_executor(pool, pillows.seek_gif_save, url, msg_id)
-    return file, nm
+        file, name = await loop.run_in_executor(pool, pillows.seek_gif_save, url)
+    return file, name

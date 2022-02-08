@@ -12,22 +12,6 @@ from glitch_this import ImageGlitcher
 
 import deeppyer
 
-def seek_gif_save(url: str, msg_id: int, path="tmp/"):
-    '''Converts a video file to a gif, with a max length of 5 seconds due to discord file-size restrictions
-    '''
-    nm = str(msg_id) + ".gif"
-    subprocess.run(
-        ['ffmpeg', '-hide_banner', 
-         '-loglevel', 'error',
-         '-i', url,
-         '-vf',
-         'fps=10,scale=320:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse',
-         '-fs','8M',
-         '-loop', '0', path+nm]
-        )
-    file = discord.File(path + nm)
-    return file, nm
-
 def seek_save(img: PIL.Image, fmt: str, nm: str):
     '''Saves pillow files into memory
     '''
@@ -85,4 +69,24 @@ async def deepfry(file):
     deep_img = PIL.Image.open(io.BytesIO(file)).convert("RGB") 
     deep_img = await deeppyer.deepfry(deep_img, flares=False)
     file, name = seek_save(deep_img, "png", "deep_image.png")
+    return file, name
+
+def seek_gif_save(url: str):
+    '''Converts a video file to a gif, with a max length of 5 seconds due to discord file-size restrictions
+    '''
+    pipe = subprocess.run(
+        ['ffmpeg', '-hide_banner', 
+         '-loglevel', 'error',
+         '-i', url,
+         '-vf',
+         'fps=10,scale=320:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse',
+         '-fs','8M',
+         '-loop', '0', "-f", "gif", "pipe:1"], 
+        stdout=subprocess.PIPE, 
+        stderr=subprocess.PIPE
+        )
+
+    name = "output.gif"
+    output = io.BytesIO(pipe.stdout)
+    file = discord.File(output, name)
     return file, name

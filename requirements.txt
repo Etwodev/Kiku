@@ -1,9 +1,11 @@
 mysql-connector-python
 saucenao_api
-discord.py
+pycord
 discord-components
 aiomysql
 matplotlib
 asyncio
 saucenao_api
 pygelbooru
+glitch_this
+deeppyer

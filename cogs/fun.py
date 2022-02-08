@@ -52,11 +52,10 @@ class fun(commands.Cog):
         if self.parsing.endswith_bool(self.file_types.fun.lookup_vid, url):
             embed.LookupLoadingEmbed()
             msg = await ctx.reply(embed=embed.embed)
-            file, nm = await self.threading.gif_handler(url, ctx.message.id)
+            file, name = await self.threading.gif_handler(url)
             await msg.delete()
-            embed.LookupFileEmbed(nm, score)
+            embed.LookupFileEmbed(name, score)
             await ctx.reply(embed=embed.embed, components=components, file=file)
-            utils.config.remove_file(nm)
         else:
             embed.LookupURLEmbed(url, score)
             await ctx.reply(embed=embed.embed, components=components)
