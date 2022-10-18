@@ -4,18 +4,24 @@
     <img src="assets/images/pic01.png" alt="Logo" width="200" height="200">
   </a>
 
-  <h3 align="center">Ayako</h3>
+  <h1 align="center">Ayako</h1><n\>
 
   <p align="center">
-    <b>yes</b>; this is where I store my bot.
-    <br />
-    <br />
-    <a href="https://github.com/etwodev/Ayako/issues">Report Bug</a>
+    <s><a href="https://github.com/etwodev/Ayako/issues">Report Bug</a></s>
     ·
-    <a href="https://github.com/etwodev/Ayako/issues">Suggest Feature</a>
+    <s><a href="https://github.com/etwodev/Ayako/issues">Suggest Feature</a></s>
     <br />
     <sub>Distributed under the GNU GPLv3 License. See `LICENSE.txt` for more information.</sub>
   </p>
+  <h1 align="center"></h1>
+  
+  <h3 align="center">DEPRECATED</h3>
+    <a href="https://github.com/etwodev/Ayako">
+    <img src="assets/images/pic02.png" alt="Icon" width="200" height="200">
+  </a>
+  <h5 align="center">THIS PROJECT IS DEAD AND NO LONGER IN DEVELOPMENT.</h5>
+  <h1 align="center"></h1>
+  
 </div>
 
 ## Documentation
